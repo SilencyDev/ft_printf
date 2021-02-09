@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/04 13:45:16 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/08 13:34:26 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/02/09 12:18:08 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 # define FT_PRINT_H
 
 # include <stdarg.h>
-# include "./libft/libft.h"
+# include "libft/libft.h"
 
 typedef struct		s_option
 {
