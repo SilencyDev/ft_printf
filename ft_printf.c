@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/04 12:52:26 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/09 13:02:17 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/02/09 16:45:01 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,55 +31,6 @@ int		ft_strlen(const char *s)
 	while (s[n])
 		n++;
 	return (n);
-}
-
-int				ft_intlen(long int n)
-{
-	int			len;
-
-	len = 0;
-	if (n == 0)
-		return (1);
-	if (n < 0)
-	{
-		n = n * -1;
-		len++;
-	}
-	while (n > 0)
-	{
-		n = n / 10;
-		len++;
-	}
-	return (len);
-}
-
-long int		ft_noneg(long int n)
-{
-	if (n < 0)
-		return (-n);
-	return (n);
-}
-
-char			*ft_itoa(int n)
-{
-	char		*dst;
-	int			len;
-	int			neg;
-
-	len = ft_intlen(n);
-	neg = (n < 0) ? -1 : 1;
-	if (!(dst = (char *)malloc(sizeof(char) * (len + 1))))
-		return (NULL);
-	dst[len--] = '\0';
-	while (len >= 0)
-	{
-		dst[len] = '0' + ft_noneg(n % 10);
-		n = ft_noneg(n / 10);
-		len--;
-	}
-	if (neg == -1)
-		dst[0] = '-';
-	return (dst);
 }
 
 void			ft_putnbr(long long nb, char *base, int baselen)
@@ -178,22 +129,22 @@ size_t	len_filter(char *toformat)
 	return (j);
 }
 
-void	handle_format(t_option *option, va_list args)
+void	convert_type_format(t_option *option, va_list args)
 {
 	if (option->type == 'c')
 		ft_putchar(va_arg(args, int));
 	if (option->type == 's')
 		ft_putstr(va_arg(args, char*));
 	if (option->type == 'p')
-		ft_putptr_base(va_arg(args, long long), "0123456789abcdef");
+		ft_putptr_base(va_arg(args, unsigned long int), "0123456789abcdef");
 	if (option->type == 'd' || option->type == 'i')
-		ft_putstr(ft_itoa(va_arg(args, int)));
+		ft_putnbr_base(va_arg(args, int), "0123456789");
 	if (option->type == 'u')
-		ft_putnbr_base(va_arg(args, long long), "0123456789");
+		ft_putnbr_base(va_arg(args, unsigned int), "0123456789");
 	if (option->type == 'x')
-		ft_putnbr_base(va_arg(args, long long), "0123456789abcdef");
+		ft_putnbr_base(va_arg(args, unsigned int), "0123456789abcdef");
 	if (option->type == 'X')
-		ft_putnbr_base(va_arg(args, long long), "0123456789ABCDEF");
+		ft_putnbr_base(va_arg(args, unsigned int), "0123456789ABCDEF");
 }
 
 int					ft_printf(const char *format, ...)
@@ -214,7 +165,7 @@ int					ft_printf(const char *format, ...)
 			toformat++;
 			option = analyze_format(toformat);
 			i = len_filter(toformat);
-			handle_format(option, args);
+			convert_type_format(option, args);
 			free(option);
 			toformat = toformat + i;
 		}
