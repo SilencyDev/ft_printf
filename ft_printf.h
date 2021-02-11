@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/04 13:45:16 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/09 12:18:08 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/02/11 17:13:12 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,6 @@ typedef struct		s_option
 	int width;
 	int dot;			// to know if there is precision
 	int precision;		// initially set as -1 instead of 0
-	int flag_pre_va;	// if precision is a variable argument
 	int num_n;			// is number negative?
 	char type;
  }					t_option;
