@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/04 12:52:26 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/13 15:17:30 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/02/13 17:17:47 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,36 +62,6 @@ int				ft_intlen(long int n)
 	}
 	return (len);
 }
-
-long int		ft_noneg(long int n)
-{
-	if (n < 0)
-		return (-n);
-	return (n);
-}
-
-char		*ft_itoa(int n)
-{
-	char	*dst;
-	int		len;
-	int		neg;
-
-	len = ft_intlen(n);
-	neg = (n < 0) ? -1 : 1;
-	if (!(dst = (char *)malloc(sizeof(char) * (len + 1))))
-		return (NULL);
-	dst[len--] = '\0';
-	while (len >= 0)
-	{
-		dst[len] = '0' + ft_noneg(n % 10);
-		n = ft_noneg(n / 10);
-		len--;
-	}
-	if (neg == -1)
-		dst[0] = '-';
-	return (dst);
-}
-
 
 int					ft_atoi(const char *str)
 {
@@ -212,20 +182,20 @@ t_option		*analyze_format(char *toformat, va_list args)
 	i = 0;
 	while (!find_converter(toformat[i], "cspdiuxX") && toformat[i])
 	{
-		if ((tmp = find_converter(toformat[i], "0-.*")) != 0)
+		if ((find_converter(toformat[i], "0-.*")) != 0)
 		{
-			if (toformat[i - 1] && toformat[i - 1] != '.' && toformat[i] == '-')
-				option->flag_minus = tmp == '-' ? 1 : 0;
+			if (toformat[i - 1] != '.' && toformat[i] == '-')
+				option->flag_minus = 1;
 			else if (toformat[i] == '.')
-				option->dot = tmp == '.' ? 1 : 0;
-			else if (toformat[i - 1] && (toformat[i - 1] < '9' && toformat[i - 1] > '0') && toformat[i] == '0')
-				option->flag_zero = tmp == '0' ? 1 : 0;
+				option->dot = 1;
+			else if ((toformat[i - 1] < '0' || toformat[i - 1] > '9') && toformat[i] == '0')
+				option->flag_zero = 1;
 			else if (toformat[i] == '*' && toformat[i - 1] != '.')
-				option->width = tmp == '*' ? va_arg(args, int) : 0;
+				option->width = va_arg(args, int);
 			else if (toformat[i] == '*' && toformat[i - 1] != '.')
-				option->dot = tmp == '*' ? va_arg(args, int) : 0;
+				option->dot = va_arg(args, int);
 		}
-		if (find_converter(toformat[i], "1234567890") && toformat[i])
+		if (find_converter(toformat[i], "123456789") && toformat[i])
 		{
 			if (toformat[i - 1] == '.')
 				option->dot = ft_atoi(&toformat[i]);
@@ -268,21 +238,44 @@ int						convert_type_format(t_option *option, va_list args)
 	tmp = malloc(255);
 	if (option->type == 'c')
 	{
-		if (option->width > 0 && option->flag_minus == 0)
-			j += padding(option->width - 1, ' ');
+		if (option->flag_minus == 0)
+		{
+			if (option->flag_zero > 0)
+				j += padding(option->width - 1, '0');
+			else
+				j += padding(option->width - 1, ' ');
+		}
 		j += ft_putchar(va_arg(args, int), 1);
-		if (option->flag_minus > 0 && option->width > 0)
-			j += padding(option->width - 1, ' ');
+		if (option->flag_minus > 0 && option->width > option->dot)
+		{
+			if (i < option->dot)
+				j += padding(option->width - option->dot, ' ');
+			else
+				j += padding(option->width - 1, ' ');
+		}
 	}
 	if (option->type == 's')
 	{
 		tmp = va_arg(args, char*);
 		i = ft_putstr(tmp, option->dot, 0);
-		if (option->width > 0 && option->flag_minus == 0 && option->width > i)
-			j += padding(option->width - i, ' ');
+		printf("%d", option->flag_zero);
+		if (option->flag_minus == 0 && option->width > option->dot && option->flag_zero == 0)
+		{
+			if (option->width > i)
+				j += padding(option->width - option->dot, ' ');
+			else
+				j += padding(option->width - i, ' ');
+		}
+		if (option->flag_zero > 0 || option->dot > i)
+			j += padding(option->width - i, '0');
 		j += ft_putstr(tmp, option->dot, 1);
-		if (option->flag_minus > 0 && option->width > 0)
-			j += padding(option->width - i, ' ');
+		if (option->flag_minus > 0 && option->width > option->dot)
+		{
+			if (i < option->dot)
+				j += padding(option->width - option->dot, ' ');
+			else
+				j += padding(option->width - i, ' ');
+		}
 	}
 	if (option->type == 'p')
 	{
@@ -417,6 +410,6 @@ int				ft_printf(const char *format, ...)
 int	main(void)
 {
 	char str[2] = {"he"};
-	printf("Hello mr [%c] [%10.2s] [%15p] [%10%05.4d] [%i] [%x] [%X] [%u]\n", 'e', "Pello", str, 7, +56, -213, 526, -527, 50);
-	ft_printf("Hello mr [%c] [%10.2s] [%15p] [%10%05.4d] [%i] [%x] [%X] [%u]\n", 'e', "Fello", str, 7, +56, -213, 526, -527, 50);
+	printf("Hello mr [%010c] [%010.7s] [%15.15p] [%10.5.4d] [%i] [%x] [%X] [%u]\n", 'e', "Pello", str, 7, +56, -213, 526, -527, 50);
+	ft_printf("Hello mr [%010c] [%010.7s] [%20.15p] [%10.5.4d] [%i] [%x] [%X] [%u]\n", 'e', "Fello", str, 7, +56, -213, 526, -527, 50);
 }
