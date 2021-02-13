@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/04 12:52:26 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/13 17:17:47 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/02/13 21:14:34 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,11 +123,7 @@ int			ft_putptr_base(long long nbr, char *base, int on)
 	int	i;
 
 	i = 0;
-	if (!nbr)
-		ft_putstr("(NULL)", 0, 1);
-	if (on)
-		ft_putstr("0x", 0, 1);
-	i = ft_putnbr_base(nbr, base, on) + 2;
+	i = ft_putnbr_base(nbr, base, on);
 
 	return (i);
 }
@@ -195,11 +191,14 @@ t_option		*analyze_format(char *toformat, va_list args)
 			else if (toformat[i] == '*' && toformat[i - 1] != '.')
 				option->dot = va_arg(args, int);
 		}
-		if (find_converter(toformat[i], "123456789") && toformat[i])
+		if (find_converter(toformat[i], "123456789"))
 		{
 			if (toformat[i - 1] == '.')
+			{
 				option->dot = ft_atoi(&toformat[i]);
-			else
+				i = i + ft_intlen(option->dot) - 1;
+			}
+			else if (toformat[i - 1] != '.')
 			{
 				option->width = ft_atoi(&toformat[i]);
 				i = i + ft_intlen(option->width) - 1;
@@ -258,7 +257,6 @@ int						convert_type_format(t_option *option, va_list args)
 	{
 		tmp = va_arg(args, char*);
 		i = ft_putstr(tmp, option->dot, 0);
-		printf("%d", option->flag_zero);
 		if (option->flag_minus == 0 && option->width > option->dot && option->flag_zero == 0)
 		{
 			if (option->width > i)
@@ -281,11 +279,24 @@ int						convert_type_format(t_option *option, va_list args)
 	{
 		tmpli = va_arg(args, unsigned long int);
 		i = ft_putptr_base(tmpli, "0123456789abcdef", 0);
-		if (option->width > 0 && option->flag_minus == 0 && option->width > i)
-			j += padding(option->width - i, ' ');
+		if (option->flag_minus == 0 && option->width > option->dot)
+		{
+			if (option->width > i)
+				j += padding(option->width - (option->dot + 2), ' ');
+			else
+				j += padding(option->width - i, ' ');
+		}
+		ft_putstr("0x", 0, 1);
+		if (option->flag_zero > 0 || option->dot > i)
+			j += padding(option->dot - i, '0');
 		j += ft_putptr_base(tmpli, "0123456789abcdef", 1);
-		if (option->flag_minus > 0 && option->width > 0)
-			j += padding(option->width - i, ' ');
+		if (option->flag_minus > 0 && option->width > option->dot)
+		{
+			if (i < option->dot)
+				j += padding(option->width - (option->dot + 2), ' ');
+			else
+				j += padding(option->width - i, ' ');
+		}
 	}
 	if (option->type == 'd' || option->type == 'i')
 	{
@@ -410,6 +421,6 @@ int				ft_printf(const char *format, ...)
 int	main(void)
 {
 	char str[2] = {"he"};
-	printf("Hello mr [%010c] [%010.7s] [%15.15p] [%10.5.4d] [%i] [%x] [%X] [%u]\n", 'e', "Pello", str, 7, +56, -213, 526, -527, 50);
-	ft_printf("Hello mr [%010c] [%010.7s] [%20.15p] [%10.5.4d] [%i] [%x] [%X] [%u]\n", 'e', "Fello", str, 7, +56, -213, 526, -527, 50);
+	printf("Hello mr [%010c] [%010.7s] [%-20.14p] [%10.5.4d] [%i] [%x] [%X] [%u]\n", 'e', "Pello", str, 7, +56, -213, 526, -527, 50);
+	ft_printf("Hello mr [%010c] [%010.7s] [%-20.14p] [%10.5.4d] [%i] [%x] [%X] [%u]\n", 'e', "Fello", str, 7, +56, -213, 526, -527, 50);
 }
