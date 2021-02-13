@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/04 12:52:26 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/11 17:13:21 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/02/13 15:17:30 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,8 +184,11 @@ int			find_converter(char str, char *charset)
 
 	k = 0;
 	while (charset[k])
-		if (str == charset[k++])
-			return (charset[--k]);
+	{
+		if (str == charset[k])
+			return (charset[k]);
+		k++;
+	}
 	return (0);
 }
 
@@ -194,7 +197,7 @@ int		padding(int i, char c)
 	int	j;
 
 	j = 0;
-	while (i--)
+	while (i-- > 0)
 		j += ft_putchar(c, 1);
 	return (j);
 }
@@ -211,16 +214,16 @@ t_option		*analyze_format(char *toformat, va_list args)
 	{
 		if ((tmp = find_converter(toformat[i], "0-.*")) != 0)
 		{
-			option->dot = tmp == '.' ? 1 : 0;
 			if (toformat[i - 1] && toformat[i - 1] != '.' && toformat[i] == '-')
 				option->flag_minus = tmp == '-' ? 1 : 0;
-			else if (toformat[i - 1] && (toformat[i - 1] > '9' || toformat[i - 1] < '0') && toformat[i] == '0')
+			else if (toformat[i] == '.')
+				option->dot = tmp == '.' ? 1 : 0;
+			else if (toformat[i - 1] && (toformat[i - 1] < '9' && toformat[i - 1] > '0') && toformat[i] == '0')
 				option->flag_zero = tmp == '0' ? 1 : 0;
-			else if (toformat[i - 1] && toformat[i - 1] != '.' && toformat[i] == '*')
+			else if (toformat[i] == '*' && toformat[i - 1] != '.')
 				option->width = tmp == '*' ? va_arg(args, int) : 0;
-			else if (toformat[i - 1] && toformat[i - 1] == '.' && toformat[i] == '*')
+			else if (toformat[i] == '*' && toformat[i - 1] != '.')
 				option->dot = tmp == '*' ? va_arg(args, int) : 0;
-			i++;
 		}
 		if (find_converter(toformat[i], "1234567890") && toformat[i])
 		{
@@ -295,41 +298,89 @@ int						convert_type_format(t_option *option, va_list args)
 	{
 		tmpi = va_arg(args, int);
 		i = ft_putnbr_base(tmpi, "0123456789", 0);
-		if (option->width > 0 && option->flag_minus == 0 && option->width > i)
-			j += padding(option->width - i, (option->flag_zero != 0 && option->flag_minus == 0) ? '0' : ' ');
+		if (option->flag_minus == 0 && option->width > option->dot)
+		{
+			if (option->width > i)
+				j += padding(option->width - option->dot, ' ');
+			else
+				j += padding(option->width - i, ' ');
+		}
+		if (option->flag_zero > 0 || option->dot > i)
+			j += padding(option->dot - i, '0');
 		j += ft_putnbr_base(tmpi, "0123456789", 1);
-		if (option->flag_minus > 0 && option->width > 0)
-			j += padding(option->width - i, ' ');
+		if (option->flag_minus > 0 && option->width > option->dot)
+		{
+			if (i < option->dot)
+				j += padding(option->width - option->dot, ' ');
+			else
+				j += padding(option->width - i, ' ');
+		}
 	}
 	if (option->type == 'u')
 	{
 		tmpui = va_arg(args, unsigned int);
-		i = ft_putnbr_base(tmpi, "0123456789", 0);
-		if (option->width > 0 && option->flag_minus == 0 && option->width > i)
-			j += padding(option->width - i, option->flag_zero != 0 && option->flag_minus == 0 ? '0' : ' ');
+		i = ft_putnbr_base(tmpui, "0123456789", 0);
+		if (option->flag_minus == 0 && option->width > option->dot)
+		{
+			if (option->width > i)
+				j += padding(option->width - option->dot, ' ');
+			else
+				j += padding(option->width - i, ' ');
+		}
+		if (option->flag_zero > 0 || option->dot > i)
+			j += padding(option->dot - i, '0');
 		j += ft_putnbr_base(tmpui, "0123456789", 1);
-		if (option->flag_minus > 0 && option->width > 0)
-			j += padding(option->width - i, ' ');
+		if (option->flag_minus > 0 && option->width > option->dot)
+		{
+			if (i < option->dot)
+				j += padding(option->width - option->dot, ' ');
+			else
+				j += padding(option->width - i, ' ');
+		}
 	}
 	if (option->type == 'x')
 	{
 		tmpui = va_arg(args, unsigned int);
-		i = ft_putnbr_base(tmpi, "0123456789abcdef", 0);
-		if (option->width > 0 && option->flag_minus == 0 && option->width > i)
-			j += padding(option->width - i, option->flag_zero != 0 && option->flag_minus == 0 ? '0' : ' ');
+		i = ft_putnbr_base(tmpui, "0123456789abcdef", 0);
+		if (option->flag_minus == 0 && option->width > option->dot)
+		{
+			if (option->width > i)
+				j += padding(option->width - option->dot, ' ');
+			else
+				j += padding(option->width - i, ' ');
+		}
+		if (option->flag_zero > 0 || option->dot > i)
+			j += padding(option->dot - i, '0');
 		j += ft_putnbr_base(tmpui, "0123456789abcdef", 1);
-		if (option->flag_minus > 0 && option->width > 0)
-			j += padding(option->width - i, ' ');
+		if (option->flag_minus > 0 && option->width > option->dot)
+		{
+			if (i < option->dot)
+				j += padding(option->width - option->dot, ' ');
+			else
+				j += padding(option->width - i, ' ');
+		}
 	}
 	if (option->type == 'X')
 	{
 		tmpui = va_arg(args, unsigned int);
-		i = ft_putnbr_base(tmpi, "0123456789ABCDEF", 0);
-		if (option->width > 0 && option->flag_minus == 0 && option->width > i)
-			j += padding(option->width - i, option->flag_zero != 0 && option->flag_minus == 0 ? '0' : ' ');
+		i = ft_putnbr_base(tmpui, "0123456789ABCDEF", 0);
+		if (option->flag_minus == 0 && option->width > option->dot)
+		{
+			if (option->width > i)
+				j += padding(option->width - option->dot, ' ');
+			else
+				j += padding(option->width - i, ' ');
+		}
+		if (option->flag_zero > 0 || option->dot > i)
+			j += padding(option->dot - i, '0');
 		j += ft_putnbr_base(tmpui, "0123456789ABCDEF", 1);
-		if (option->flag_minus > 0 && option->width > 0)
-			j += padding(option->width - i, ' ');
+		if (option->flag_minus > 0 && option->width > option->dot)
+		{
+			if (i < option->dot)
+				j += padding(option->width - option->dot, ' ');
+			else
+				j += padding(option->width - i, ' ');
+		}
 	}
 	return (j);
 }
@@ -366,6 +417,6 @@ int				ft_printf(const char *format, ...)
 int	main(void)
 {
 	char str[2] = {"he"};
-	printf("Hello mr %c %10.2s %15p %020.3d %i %x %X %u\n", 'e', "Pello", str, +56, -213, 526, -527, 50);
-	ft_printf("Hello mr %c %10.2s %15p %020.3d %i %x %X %u\n", 'e', "Fello", str, +56, -213, 526, -527, 50);
+	printf("Hello mr [%c] [%10.2s] [%15p] [%10%05.4d] [%i] [%x] [%X] [%u]\n", 'e', "Pello", str, 7, +56, -213, 526, -527, 50);
+	ft_printf("Hello mr [%c] [%10.2s] [%15p] [%10%05.4d] [%i] [%x] [%X] [%u]\n", 'e', "Fello", str, 7, +56, -213, 526, -527, 50);
 }
