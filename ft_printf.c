@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/04 12:52:26 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/16 16:27:36 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/02/16 17:21:19 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,38 +186,42 @@ int		padding(int i, char c)
 	return (j);
 }
 
+void	analyze_flags(char *s, va_list args, t_option *o)
+{
+	int		tmp;
+
+	if (*s == '-')
+	{
+		o = ft_init_option(o);
+		o->flag_minus = 1;
+	}
+	else if (*s == '.')
+		o->dot = 0;
+	else if (*s == '0' && (*(s - 1) < '0' || *(s - 1) > '9'))
+		o->flag_zero = 1;
+	else if (*s == '*')
+	{
+		tmp = va_arg(args, int);
+		if (*(s - 1) != '.')
+		{
+			if (o->width < 0)
+				o = ft_init_option(o);
+			o->width = tmp;
+		}
+		if (*(s - 1) == '.')
+			o->dot = tmp;
+	}
+}
+
 t_option	*analyze_format(char *toformat, va_list args, t_option *o)
 {
 	size_t	i;
-	int		tmp;
 
 	i = 0;
 	while (find_converter(toformat[i], "0123456789.-*") && toformat[i])
 	{
 		if ((find_converter(toformat[i], "0-.*")) != 0)
-		{
-			if (toformat[i] == '-')
-			{
-				o = ft_init_option(o);
-				o->flag_minus = 1;
-			}
-			else if (toformat[i] == '.')
-				o->dot = 0;
-			else if (toformat[i] == '0' && (toformat[i - 1] < '0' || toformat[i - 1] > '9'))
-				o->flag_zero = 1;
-			else if (toformat[i] == '*')
-			{
-				tmp = va_arg(args, int);
-				if (toformat[i - 1] != '.')
-				{
-					if (o->width < 0)
-						o = ft_init_option(o);
-					o->width = tmp;
-				}
-				if (toformat[i - 1] == '.')
-					o->dot = tmp;
-			}
-		}
+			analyze_flags(&toformat[i], args, o);
 		if (find_converter(toformat[i], "123456789"))
 		{
 			if (toformat[i - 1] == '.')
@@ -258,10 +262,8 @@ char	*set_base(char c)
 	return (0);
 }
 
-void	convert_s(char *s, t_option *o)
+void	convert_s(char *s, t_option *o, int i)
 {
-	int	i;
-
 	if (s == NULL)
 		s = "(null)";
 	i = ft_putstr(s, o->dot, 0);
@@ -280,16 +282,11 @@ void	convert_s(char *s, t_option *o)
 		padding(o->width - o->a_p, ' ');
 }
 
-void	convert_di(int nb, t_option *o)
+void	convert_di(int nb, t_option *o, int i)
 {
-	int	i;
-
 	i = ft_putnbr_base(nb, set_base(o->type), 0);
-	o->a_p = o->dot > i ? o->dot : i;
-	if (nb < 0)
-		o->width--;
-	if (o->dot < 0)
-		o->a_p = i;
+	o->a_p = (o->dot <= i || o->dot < 0) ? i : o->dot;
+	o->width = nb < 0 ? o->width - 1 : o->width;
 	if (o->dot == 0 && nb == 0)
 		o->a_p = 0;
 	if (o->flag_minus == 0 && o->width > o->a_p)
@@ -313,10 +310,8 @@ void	convert_di(int nb, t_option *o)
 		padding(o->width - o->a_p, ' ');
 }
 
-void	convert_uxx(unsigned int nb, t_option *o)
+void	convert_uxx(unsigned int nb, t_option *o, int i)
 {
-	int	i;
-
 	i = ft_putnbr_base(nb, set_base(o->type), 0);
 	o->a_p = o->dot > i ? o->dot : i;
 	if (o->dot < 0)
@@ -337,10 +332,8 @@ void	convert_uxx(unsigned int nb, t_option *o)
 		padding(o->width - o->a_p, ' ');
 }
 
-void	convert_p(unsigned long int nb, t_option *o)
+void	convert_p(unsigned long int nb, t_option *o, int i)
 {
-	int i;
-
 	i = ft_putptr_base(nb, set_base(o->type), 0);
 	o->a_p = o->dot > i ? o->dot : i;
 	if (o->dot < 0)
@@ -360,6 +353,23 @@ void	convert_p(unsigned long int nb, t_option *o)
 		padding(o->width - (o->a_p + 2), ' ');
 }
 
+void	convert_c_other(va_list args, t_option *o)
+{
+	if (o->flag_minus == 0)
+	{
+		if (o->flag_zero > 0)
+			padding(o->width - 1, '0');
+		else
+			padding(o->width - 1, ' ');
+	}
+	if (o->type == 'c' && o->dot != 0)
+		ft_putchar(va_arg(args, int), 1);
+	else if (o->dot != 0)
+		ft_putchar(o->type, 1);
+	if (o->flag_minus == 1)
+		padding(o->width - 1, ' ');
+}
+
 void	convert_type_format(t_option *o, va_list args)
 {
 	int	i;
@@ -371,29 +381,15 @@ void	convert_type_format(t_option *o, va_list args)
 		o->width = -o->width;
 	}
 	if (o->type == 's')
-		convert_s(va_arg(args, char*), o);
+		convert_s(va_arg(args, char*), o, i);
 	else if (o->type == 'p')
-		convert_p(va_arg(args, long long), o);
+		convert_p(va_arg(args, long long), o, i);
 	else if (o->type == 'd' || o->type == 'i')
-		convert_di(va_arg(args, int), o);
+		convert_di(va_arg(args, int), o, i);
 	else if (o->type == 'X' || o->type == 'x' || o->type == 'u')
-		convert_uxx(va_arg(args, unsigned int), o);
+		convert_uxx(va_arg(args, unsigned int), o, i);
 	else
-	{
-		if (o->flag_minus == 0)
-		{
-			if (o->flag_zero > 0)
-				padding(o->width - 1, '0');
-			else
-				padding(o->width - 1, ' ');
-		}
-		if (o->type == 'c' && o->dot != 0)
-			ft_putchar(va_arg(args, int), 1);
-		else if (o->dot != 0)
-			ft_putchar(o->type, 1);
-		if (o->flag_minus == 1)
-			padding(o->width - 1, ' ');
-	}
+		convert_c_other(args, o);
 }
 
 int				ft_printf(const char *format, ...)
@@ -401,12 +397,12 @@ int				ft_printf(const char *format, ...)
 	char		*toformat;
 	size_t		i;
 	t_option	*o;
+	va_list		args;
 
-	toformat = (char *)format;
-	va_list	args;
-	va_start(args, format);
 	if (!(o = malloc(sizeof(t_option))))
 		return (-1);
+	toformat = (char *)format;
+	va_start(args, format);
 	while (*toformat)
 	{
 		if (*toformat == '%')
