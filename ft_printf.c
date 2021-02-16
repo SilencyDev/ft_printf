@@ -6,16 +6,21 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/04 12:52:26 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/13 21:14:34 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/02/16 14:46:36 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
+int	g_count = 0;
+
 int	ft_putchar(char c, int on)
 {
 	if (on != 0)
+	{
 		write(1, &c, 1);
+		g_count++;
+	}
 	return (1);
 }
 
@@ -24,10 +29,10 @@ int	ft_putstr(char *str, int prec, int on)
 	int	i;
 
 	i = 0;
-	if (prec != 0)
+	if (prec > 0)
 		while (*str && str && i < prec)
 			i += ft_putchar(*str++, on);
-	else if (prec == 0)
+	else if (prec < 0)
 		while (*str && str)
 			i += ft_putchar(*str++, on);
 	return (i);
@@ -67,7 +72,7 @@ int					ft_atoi(const char *str)
 {
 	unsigned int	i;
 	int				posneg;
-	int				result;
+	int	result;
 
 	i = 0;
 	result = 0;
@@ -85,10 +90,12 @@ int					ft_atoi(const char *str)
 	return (result * posneg);
 }
 
-int			ft_putnbr(long long nb, char *base, int baselen, int on)
+int			ft_putptr(unsigned long int nb, char *base, int on)
 {
 	static int	i;
+	unsigned long int	baselen;
 
+	baselen = ft_strlen(base);
 	i = 0;
 	if (nb < 0)
 	{
@@ -100,48 +107,65 @@ int			ft_putnbr(long long nb, char *base, int baselen, int on)
 		i += ft_putchar(base[1], on);
 	}
 	if (nb > baselen)
-		ft_putnbr((nb / baselen), base, baselen, on);
+		ft_putptr((nb / baselen), base, on);
 	i += ft_putchar(base[nb % baselen], on);
 
 	return (i);
 }
 
-int			ft_putnbr_base(long long nbr, char *base, int on)
+int			ft_putnbr(long long nb, char *base, int on)
 {
+	static int	i;
 	int	baselen;
-	int	i;
 
-	i = 0;
 	baselen = ft_strlen(base);
-	i = ft_putnbr(nbr, base, baselen, on);
+	i = 0;
+	if (nb < 0)
+	{
+		ft_putchar('-', 0);
+		nb = -nb;
+	}
+	if (nb == baselen)
+	{
+		i += ft_putchar(base[1], on);
+	}
+	if (nb > baselen)
+		ft_putnbr((nb / baselen), base, on);
+	i += ft_putchar(base[nb % baselen], on);
 
 	return (i);
 }
 
-int			ft_putptr_base(long long nbr, char *base, int on)
+int			ft_putnbr_base(long nbr, char *base, int on)
 {
 	int	i;
 
 	i = 0;
-	i = ft_putnbr_base(nbr, base, on);
+	i = ft_putnbr(nbr, base, on);
 
 	return (i);
 }
 
-t_option	*ft_init_option(void)
+int			ft_putptr_base(unsigned long int nbr, char *base, int on)
 {
-	t_option *option;
+	int	i;
 
-	if (!(option = malloc(sizeof(t_option))))
-		return (NULL);
-	option->flag_minus = 0;
-	option->flag_zero = 0;
-	option->width = 0;
-	option->dot = 0;
-	option->precision = -1;
-	option->num_n = 0;
-	option->type = 0;
-	return (option);
+	i = 0;
+	i = ft_putptr(nbr, base, on);
+
+	return (i);
+}
+
+
+t_option	*ft_init_option(t_option *o)
+{
+	o->flag_minus = 0;
+	o->flag_zero = 0;
+	o->width = 0;
+	o->dot = -1;
+	o->a_p = 0;
+	o->type = 0;
+	return (o);
 }
 
 int			find_converter(char str, char *charset)
@@ -168,47 +192,55 @@ int		padding(int i, char c)
 	return (j);
 }
 
-t_option		*analyze_format(char *toformat, va_list args)
+t_option		*analyze_format(char *toformat, va_list args, t_option *o)
 {
-	char		tmp;
 	size_t		i;
-	t_option	*option;
+	int			tmp;
 
-	option = ft_init_option();
 	i = 0;
-	while (!find_converter(toformat[i], "cspdiuxX") && toformat[i])
+	while (find_converter(toformat[i], "0123456789.-*") && toformat[i])
 	{
 		if ((find_converter(toformat[i], "0-.*")) != 0)
 		{
-			if (toformat[i - 1] != '.' && toformat[i] == '-')
-				option->flag_minus = 1;
+			if (toformat[i] == '-')
+			{
+				o = ft_init_option(o);
+				o->flag_minus = 1;
+			}
 			else if (toformat[i] == '.')
-				option->dot = 1;
-			else if ((toformat[i - 1] < '0' || toformat[i - 1] > '9') && toformat[i] == '0')
-				option->flag_zero = 1;
-			else if (toformat[i] == '*' && toformat[i - 1] != '.')
-				option->width = va_arg(args, int);
-			else if (toformat[i] == '*' && toformat[i - 1] != '.')
-				option->dot = va_arg(args, int);
+				o->dot = 0;
+			else if (toformat[i] == '0' && (toformat[i - 1] < '0' || toformat[i - 1] > '9'))
+				o->flag_zero = 1;
+			else if (toformat[i] == '*')
+			{
+				tmp = va_arg(args, int);
+				if (toformat[i - 1] != '.')
+				{
+					if (o->width < 0)
+						o = ft_init_option(o);
+					o->width = tmp;
+				}
+				if (toformat[i - 1] == '.')
+					o->dot = tmp;
+			}
 		}
 		if (find_converter(toformat[i], "123456789"))
 		{
 			if (toformat[i - 1] == '.')
 			{
-				option->dot = ft_atoi(&toformat[i]);
-				i = i + ft_intlen(option->dot) - 1;
+				o->dot = ft_atoi(&toformat[i]);
+				i = i + ft_intlen(o->dot) - 1;
 			}
 			else if (toformat[i - 1] != '.')
 			{
-				option->width = ft_atoi(&toformat[i]);
-				i = i + ft_intlen(option->width) - 1;
+				o->width = ft_atoi(&toformat[i]);
+				i = i + ft_intlen(o->width) - 1;
 			}
 		}
 		i++;
 	}
-	if (find_converter(toformat[i], "cspdiuxX") != 0)
-		option->type = find_converter(toformat[i], "cspdiuxX");
-	return (option);
+	o->type = toformat[i];
+	return (o);
 }
 
 size_t		len_filter(char *toformat)
@@ -216,17 +248,26 @@ size_t		len_filter(char *toformat)
 	size_t	j;
 
 	j = 0;
-	while (!find_converter(toformat[j], "cspdiuxX") && *toformat)
-		j++;
-	if (find_converter(toformat[j], "cspdiuxX"))
+	while (find_converter(toformat[j], "0123456789.-*") && *toformat)
 		j++;
 	return (j);
 }
 
-int						convert_type_format(t_option *option, va_list args)
+char	*set_base(char c)
+{
+	if (c == 'p' || c == 'x')
+		return ("0123456789abcdef");
+	else if (c == 'd' || c == 'i' || c == 'u')
+		return ("0123456789");
+	else if (c == 'X')
+		return ("0123456789ABCDEF");
+	return (0);
+}
+
+void						convert_type_format(t_option *o, va_list args)
 {
 	char				*tmp;
-	unsigned long int	tmpli;
+	unsigned long long	tmpli;
 	int					tmpi;
 	unsigned int		tmpui;
 	int					i;
@@ -234,193 +275,171 @@ int						convert_type_format(t_option *option, va_list args)
 
 	i = 0;
 	j = 0;
-	tmp = malloc(255);
-	if (option->type == 'c')
+	if (o->width < 0)
 	{
-		if (option->flag_minus == 0)
-		{
-			if (option->flag_zero > 0)
-				j += padding(option->width - 1, '0');
-			else
-				j += padding(option->width - 1, ' ');
-		}
-		j += ft_putchar(va_arg(args, int), 1);
-		if (option->flag_minus > 0 && option->width > option->dot)
-		{
-			if (i < option->dot)
-				j += padding(option->width - option->dot, ' ');
-			else
-				j += padding(option->width - 1, ' ');
-		}
+		o->flag_minus = 1;
+		o->width = -o->width;
 	}
-	if (option->type == 's')
+	if (o->type == 's')
 	{
 		tmp = va_arg(args, char*);
-		i = ft_putstr(tmp, option->dot, 0);
-		if (option->flag_minus == 0 && option->width > option->dot && option->flag_zero == 0)
+		if (tmp == NULL)
+			tmp = "(null)";
+		i = ft_putstr(tmp, o->dot, 0);
+		o->a_p = o->dot < i ? o->dot : i;
+		if (o->dot < 0)
+			o->a_p = i;
+		if (o->flag_minus == 0 && o->width > o->a_p && o->a_p > -1)
 		{
-			if (option->width > i)
-				j += padding(option->width - option->dot, ' ');
+			if (o->flag_zero == 1 && o->dot != 0)
+				padding(o->width - o->a_p, '0');
 			else
-				j += padding(option->width - i, ' ');
+				padding(o->width - o->a_p, ' ');
 		}
-		if (option->flag_zero > 0 || option->dot > i)
-			j += padding(option->width - i, '0');
-		j += ft_putstr(tmp, option->dot, 1);
-		if (option->flag_minus > 0 && option->width > option->dot)
-		{
-			if (i < option->dot)
-				j += padding(option->width - option->dot, ' ');
-			else
-				j += padding(option->width - i, ' ');
-		}
+		ft_putstr(tmp, o->a_p, 1);
+		if (o->flag_minus > 0 && o->width > o->a_p)
+			padding(o->width - o->a_p, ' ');
 	}
-	if (option->type == 'p')
+	else if (o->type == 'p')
 	{
-		tmpli = va_arg(args, unsigned long int);
-		i = ft_putptr_base(tmpli, "0123456789abcdef", 0);
-		if (option->flag_minus == 0 && option->width > option->dot)
+		tmpli = va_arg(args, long long);
+		i = ft_putptr_base(tmpli, set_base(o->type), 0);
+		o->a_p = o->dot > i ? o->dot : i;
+		if (o->dot < 0)
+			o->a_p = i;
+		if (o->flag_minus == 0 && o->width > o->a_p)
 		{
-			if (option->width > i)
-				j += padding(option->width - (option->dot + 2), ' ');
+			if (o->flag_zero == 1 && o->dot != 0)
+				padding(o->width - (o->a_p + 2), '0');
 			else
-				j += padding(option->width - i, ' ');
+				padding(o->width - (o->a_p + 2), ' ');
 		}
-		ft_putstr("0x", 0, 1);
-		if (option->flag_zero > 0 || option->dot > i)
-			j += padding(option->dot - i, '0');
-		j += ft_putptr_base(tmpli, "0123456789abcdef", 1);
-		if (option->flag_minus > 0 && option->width > option->dot)
-		{
-			if (i < option->dot)
-				j += padding(option->width - (option->dot + 2), ' ');
-			else
-				j += padding(option->width - i, ' ');
-		}
+		ft_putstr("0x", -1, 1);
+		if (o->flag_zero > 0 || o->dot > i)
+			padding(o->dot - i, '0');
+		ft_putptr_base(tmpli, set_base(o->type), 1);
+		if (o->flag_minus > 0 && o->width > o->a_p)
+			padding(o->width - (o->a_p + 2), ' ');
 	}
-	if (option->type == 'd' || option->type == 'i')
+	else if (o->type == 'd' || o->type == 'i')
 	{
 		tmpi = va_arg(args, int);
-		i = ft_putnbr_base(tmpi, "0123456789", 0);
-		if (option->flag_minus == 0 && option->width > option->dot)
+		i = ft_putnbr_base(tmpi, set_base(o->type), 0);
+		o->a_p = o->dot > i ? o->dot : i;
+		if (tmpi < 0)
+			o->width--;
+		if (o->dot < 0)
+			o->a_p = i;
+		if (o->dot == 0 && tmpi == 0)
+			o->a_p = 0;
+		if (o->flag_minus == 0 && o->width > o->a_p)
 		{
-			if (option->width > i)
-				j += padding(option->width - option->dot, ' ');
+			if (o->flag_zero == 1 && o->dot < 0)
+			{
+				if (tmpi < 0)
+					ft_putchar('-', 1);
+				padding(o->width - o->a_p, '0');
+			}
 			else
-				j += padding(option->width - i, ' ');
+				padding(o->width - o->a_p, ' ');
 		}
-		if (option->flag_zero > 0 || option->dot > i)
-			j += padding(option->dot - i, '0');
-		j += ft_putnbr_base(tmpi, "0123456789", 1);
-		if (option->flag_minus > 0 && option->width > option->dot)
-		{
-			if (i < option->dot)
-				j += padding(option->width - option->dot, ' ');
-			else
-				j += padding(option->width - i, ' ');
-		}
+		if (tmpi < 0 && !(o->flag_zero == 1 && o->dot < 0))
+			ft_putchar('-', 1);
+		o->dot = tmpi < 0 ? o->dot++ : o->dot;
+		o->dot > i ? padding(o->dot - i, '0') : 0;
+		if (!(tmpi == 0 && o->dot == 0))
+			ft_putnbr_base(tmpi, set_base(o->type), 1);
+		if (o->flag_minus > 0 && o->width > o->a_p)
+			padding(o->width - o->a_p, ' ');
 	}
-	if (option->type == 'u')
+	else if (o->type == 'X' || o->type == 'x' || o->type == 'u')
 	{
 		tmpui = va_arg(args, unsigned int);
-		i = ft_putnbr_base(tmpui, "0123456789", 0);
-		if (option->flag_minus == 0 && option->width > option->dot)
+		i = ft_putnbr_base(tmpui, set_base(o->type), 0);
+		o->a_p = o->dot > i ? o->dot : i;
+		if (o->dot < 0)
+			o->a_p = i;
+		if (o->dot == 0 && tmpui == 0)
+			o->a_p = 0;
+		if (o->flag_minus == 0 && o->width > o->a_p)
 		{
-			if (option->width > i)
-				j += padding(option->width - option->dot, ' ');
+			if (o->flag_zero == 1 && o->dot < 0)
+				padding(o->width - o->a_p, '0');
 			else
-				j += padding(option->width - i, ' ');
+				padding(o->width - o->a_p, ' ');
 		}
-		if (option->flag_zero > 0 || option->dot > i)
-			j += padding(option->dot - i, '0');
-		j += ft_putnbr_base(tmpui, "0123456789", 1);
-		if (option->flag_minus > 0 && option->width > option->dot)
-		{
-			if (i < option->dot)
-				j += padding(option->width - option->dot, ' ');
-			else
-				j += padding(option->width - i, ' ');
-		}
+		o->dot > i ? padding(o->dot - i, '0') : 0;
+		if (!(tmpui == 0 && o->dot == 0))
+			ft_putnbr_base(tmpui, set_base(o->type), 1);
+		if (o->flag_minus > 0 && o->width > o->a_p)
+			padding(o->width - o->a_p, ' ');
 	}
-	if (option->type == 'x')
+	else
 	{
-		tmpui = va_arg(args, unsigned int);
-		i = ft_putnbr_base(tmpui, "0123456789abcdef", 0);
-		if (option->flag_minus == 0 && option->width > option->dot)
+		if (o->flag_minus == 0)
 		{
-			if (option->width > i)
-				j += padding(option->width - option->dot, ' ');
+			if (o->flag_zero > 0)
+				padding(o->width - 1, '0');
 			else
-				j += padding(option->width - i, ' ');
+				padding(o->width - 1, ' ');
 		}
-		if (option->flag_zero > 0 || option->dot > i)
-			j += padding(option->dot - i, '0');
-		j += ft_putnbr_base(tmpui, "0123456789abcdef", 1);
-		if (option->flag_minus > 0 && option->width > option->dot)
-		{
-			if (i < option->dot)
-				j += padding(option->width - option->dot, ' ');
-			else
-				j += padding(option->width - i, ' ');
-		}
+		if (o->type == 'c' && o->dot != 0)
+			ft_putchar(va_arg(args, int), 1);
+		else if (o->dot != 0)
+			ft_putchar(o->type, 1);
+		if (o->flag_minus == 1)
+			padding(o->width - 1, ' ');
 	}
-	if (option->type == 'X')
-	{
-		tmpui = va_arg(args, unsigned int);
-		i = ft_putnbr_base(tmpui, "0123456789ABCDEF", 0);
-		if (option->flag_minus == 0 && option->width > option->dot)
-		{
-			if (option->width > i)
-				j += padding(option->width - option->dot, ' ');
-			else
-				j += padding(option->width - i, ' ');
-		}
-		if (option->flag_zero > 0 || option->dot > i)
-			j += padding(option->dot - i, '0');
-		j += ft_putnbr_base(tmpui, "0123456789ABCDEF", 1);
-		if (option->flag_minus > 0 && option->width > option->dot)
-		{
-			if (i < option->dot)
-				j += padding(option->width - option->dot, ' ');
-			else
-				j += padding(option->width - i, ' ');
-		}
-	}
-	return (j);
 }
 
 int				ft_printf(const char *format, ...)
 {
-	int			count;
 	char		*toformat;
 	size_t		i;
-	t_option	*option;
+	t_option	*o;
 
-	count = 0;
 	toformat = (char *)format;
 	va_list	args;
 	va_start(args, format);
+	if (!(o = malloc(sizeof(t_option))))
+		return (-1);
 	while (*toformat)
 	{
 		if (*toformat == '%')
 		{
 			toformat++;
-			option = analyze_format(toformat, args);
+			o = analyze_format(toformat, args, ft_init_option(o));
 			i = len_filter(toformat);
-			count += convert_type_format(option, args);
-			free(option);
-			toformat = toformat + i;
+			convert_type_format(o, args);
+			toformat = toformat + i + 1;
 		}
 		else
-			count += ft_putchar(*toformat++, 1);
+			ft_putchar(*toformat++, 1);
 	}
+	free(o);
 	va_end(args);
-	return (count);
+	return (g_count);
 }
 
-int	main(void)
-{
-	char str[2] = {"he"};
-	printf("Hello mr [%010c] [%010.7s] [%-20.14p] [%10.5.4d] [%i] [%x] [%X] [%u]\n", 'e', "Pello", str, 7, +56, -213, 526, -527, 50);
-	ft_printf("Hello mr [%010c] [%010.7s] [%-20.14p] [%10.5.4d] [%i] [%x] [%X] [%u]\n", 'e', "Fello", str, 7, +56, -213, 526, -527, 50);
-}
+// #include <limits.h>
+
+// int	main(void)
+// {
+// 	char str[2] = {"he"};
+// 	printf("Hello mr [%010c] [%010.7s] [%-20.14p] [%10.5.4d] [%i] [%x] [%X] [%u]\n", 'e', "Pello", str, 7, +56, -213, 526, -527, 50);
+// 	ft_printf("Hello mr [%010c] [%010.7s] [%-20.14p] [%10.5.4d] [%i] [%x] [%X] [%u]\n", 'e', "Fello", str, 7, +56, -213, 526, -527, 50);
+// 	printf("p [ 0*%0-*.*d*0 0*%0*.*d*0 ]\n", 6, 2, 102, 10, 21, -101);
+// 	ft_printf("f [ 0*%0-*.*d*0 0*%0*.*d*0 ]\n", 6, 2, 102, 10, 21, -101);
+// 	printf("p [%.-10x]\n", 100000);
+// 	ft_printf("f [%.-10x]\n", 100000);
+// 	printf("p [%.*x]\n", -10,100000);
+// 	ft_printf("f [%.*x]\n", -10,100000);
+// 	printf("p [%0x]\n", 0);
+// 	ft_printf("f [%0x]\n", 0);
+// 	printf("p [%1.x]\n", 0);
+// 	ft_printf("f [%1.x]\n", 0);
+// 	printf("p [%011.2x]\n", 1000000);
+// 	ft_printf("f [%011.2x]\n", 1000000);
+// 	printf("p [%-9.1s]\n",NULL);
+// 	ft_printf("f [%-9.1s]\n",NULL);
+// }

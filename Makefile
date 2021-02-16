@@ -6,11 +6,11 @@
 #    By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/02/02 13:02:47 by kmacquet          #+#    #+#              #
-#    Updated: 2021/02/04 13:43:18 by kmacquet         ###   ########.fr        #
+#    Updated: 2021/02/15 12:43:38 by kmacquet         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME = libfprintf.a
+NAME = libftprintf.a
 CC = gcc
 FLAGS = -Wall -Wextra -Werror -I./includes
 SRCS = ft_printf.c
