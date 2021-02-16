@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/04 12:52:26 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/16 14:46:36 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/02/16 16:27:36 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ int					ft_atoi(const char *str)
 {
 	unsigned int	i;
 	int				posneg;
-	int	result;
+	int				result;
 
 	i = 0;
 	result = 0;
@@ -90,18 +90,13 @@ int					ft_atoi(const char *str)
 	return (result * posneg);
 }
 
-int			ft_putptr(unsigned long int nb, char *base, int on)
+int					ft_putptr(unsigned long int nb, char *base, int on)
 {
-	static int	i;
-	unsigned long int	baselen;
+	static int		i;
+	unsigned int	baselen;
 
 	baselen = ft_strlen(base);
 	i = 0;
-	if (nb < 0)
-	{
-		i += ft_putchar('-', on);
-		nb = -nb;
-	}
 	if (nb == baselen)
 	{
 		i += ft_putchar(base[1], on);
@@ -113,10 +108,10 @@ int			ft_putptr(unsigned long int nb, char *base, int on)
 	return (i);
 }
 
-int			ft_putnbr(long long nb, char *base, int on)
+int				ft_putnbr(long long nb, char *base, int on)
 {
 	static int	i;
-	int	baselen;
+	int			baselen;
 
 	baselen = ft_strlen(base);
 	i = 0;
@@ -136,7 +131,7 @@ int			ft_putnbr(long long nb, char *base, int on)
 	return (i);
 }
 
-int			ft_putnbr_base(long nbr, char *base, int on)
+int		ft_putnbr_base(long nbr, char *base, int on)
 {
 	int	i;
 
@@ -146,7 +141,7 @@ int			ft_putnbr_base(long nbr, char *base, int on)
 	return (i);
 }
 
-int			ft_putptr_base(unsigned long int nbr, char *base, int on)
+int		ft_putptr_base(unsigned long int nbr, char *base, int on)
 {
 	int	i;
 
@@ -155,7 +150,6 @@ int			ft_putptr_base(unsigned long int nbr, char *base, int on)
 
 	return (i);
 }
-
 
 t_option	*ft_init_option(t_option *o)
 {
@@ -192,10 +186,10 @@ int		padding(int i, char c)
 	return (j);
 }
 
-t_option		*analyze_format(char *toformat, va_list args, t_option *o)
+t_option	*analyze_format(char *toformat, va_list args, t_option *o)
 {
-	size_t		i;
-	int			tmp;
+	size_t	i;
+	int		tmp;
 
 	i = 0;
 	while (find_converter(toformat[i], "0123456789.-*") && toformat[i])
@@ -264,116 +258,126 @@ char	*set_base(char c)
 	return (0);
 }
 
-void						convert_type_format(t_option *o, va_list args)
+void	convert_s(char *s, t_option *o)
 {
-	char				*tmp;
-	unsigned long long	tmpli;
-	int					tmpi;
-	unsigned int		tmpui;
-	int					i;
-	int					j;
+	int	i;
+
+	if (s == NULL)
+		s = "(null)";
+	i = ft_putstr(s, o->dot, 0);
+	o->a_p = o->dot < i ? o->dot : i;
+	if (o->dot < 0)
+		o->a_p = i;
+	if (o->flag_minus == 0 && o->width > o->a_p && o->a_p > -1)
+	{
+		if (o->flag_zero == 1 && o->dot != 0)
+			padding(o->width - o->a_p, '0');
+		else
+			padding(o->width - o->a_p, ' ');
+	}
+	ft_putstr(s, o->a_p, 1);
+	if (o->flag_minus > 0 && o->width > o->a_p)
+		padding(o->width - o->a_p, ' ');
+}
+
+void	convert_di(int nb, t_option *o)
+{
+	int	i;
+
+	i = ft_putnbr_base(nb, set_base(o->type), 0);
+	o->a_p = o->dot > i ? o->dot : i;
+	if (nb < 0)
+		o->width--;
+	if (o->dot < 0)
+		o->a_p = i;
+	if (o->dot == 0 && nb == 0)
+		o->a_p = 0;
+	if (o->flag_minus == 0 && o->width > o->a_p)
+	{
+		if (o->flag_zero == 1 && o->dot < 0)
+		{
+			if (nb < 0)
+				ft_putchar('-', 1);
+			padding(o->width - o->a_p, '0');
+		}
+		else
+			padding(o->width - o->a_p, ' ');
+	}
+	if (nb < 0 && !(o->flag_zero == 1 && o->dot < 0))
+		ft_putchar('-', 1);
+	o->dot = nb < 0 ? o->dot++ : o->dot;
+	o->dot > i ? padding(o->dot - i, '0') : 0;
+	if (!(nb == 0 && o->dot == 0))
+		ft_putnbr_base(nb, set_base(o->type), 1);
+	if (o->flag_minus > 0 && o->width > o->a_p)
+		padding(o->width - o->a_p, ' ');
+}
+
+void	convert_uxx(unsigned int nb, t_option *o)
+{
+	int	i;
+
+	i = ft_putnbr_base(nb, set_base(o->type), 0);
+	o->a_p = o->dot > i ? o->dot : i;
+	if (o->dot < 0)
+		o->a_p = i;
+	if (o->dot == 0 && nb == 0)
+		o->a_p = 0;
+	if (o->flag_minus == 0 && o->width > o->a_p)
+	{
+		if (o->flag_zero == 1 && o->dot < 0)
+			padding(o->width - o->a_p, '0');
+		else
+			padding(o->width - o->a_p, ' ');
+	}
+	o->dot > i ? padding(o->dot - i, '0') : 0;
+	if (!(nb == 0 && o->dot == 0))
+		ft_putnbr_base(nb, set_base(o->type), 1);
+	if (o->flag_minus > 0 && o->width > o->a_p)
+		padding(o->width - o->a_p, ' ');
+}
+
+void	convert_p(unsigned long int nb, t_option *o)
+{
+	int i;
+
+	i = ft_putptr_base(nb, set_base(o->type), 0);
+	o->a_p = o->dot > i ? o->dot : i;
+	if (o->dot < 0)
+		o->a_p = i;
+	if (o->flag_minus == 0 && o->width > o->a_p)
+	{
+		if (o->flag_zero == 1 && o->dot != 0)
+			padding(o->width - (o->a_p + 2), '0');
+		else
+			padding(o->width - (o->a_p + 2), ' ');
+	}
+	ft_putstr("0x", -1, 1);
+	if (o->flag_zero > 0 || o->dot > i)
+		padding(o->dot - i, '0');
+	ft_putptr_base(nb, set_base(o->type), 1);
+	if (o->flag_minus > 0 && o->width > o->a_p)
+		padding(o->width - (o->a_p + 2), ' ');
+}
+
+void	convert_type_format(t_option *o, va_list args)
+{
+	int	i;
 
 	i = 0;
-	j = 0;
 	if (o->width < 0)
 	{
 		o->flag_minus = 1;
 		o->width = -o->width;
 	}
 	if (o->type == 's')
-	{
-		tmp = va_arg(args, char*);
-		if (tmp == NULL)
-			tmp = "(null)";
-		i = ft_putstr(tmp, o->dot, 0);
-		o->a_p = o->dot < i ? o->dot : i;
-		if (o->dot < 0)
-			o->a_p = i;
-		if (o->flag_minus == 0 && o->width > o->a_p && o->a_p > -1)
-		{
-			if (o->flag_zero == 1 && o->dot != 0)
-				padding(o->width - o->a_p, '0');
-			else
-				padding(o->width - o->a_p, ' ');
-		}
-		ft_putstr(tmp, o->a_p, 1);
-		if (o->flag_minus > 0 && o->width > o->a_p)
-			padding(o->width - o->a_p, ' ');
-	}
+		convert_s(va_arg(args, char*), o);
 	else if (o->type == 'p')
-	{
-		tmpli = va_arg(args, long long);
-		i = ft_putptr_base(tmpli, set_base(o->type), 0);
-		o->a_p = o->dot > i ? o->dot : i;
-		if (o->dot < 0)
-			o->a_p = i;
-		if (o->flag_minus == 0 && o->width > o->a_p)
-		{
-			if (o->flag_zero == 1 && o->dot != 0)
-				padding(o->width - (o->a_p + 2), '0');
-			else
-				padding(o->width - (o->a_p + 2), ' ');
-		}
-		ft_putstr("0x", -1, 1);
-		if (o->flag_zero > 0 || o->dot > i)
-			padding(o->dot - i, '0');
-		ft_putptr_base(tmpli, set_base(o->type), 1);
-		if (o->flag_minus > 0 && o->width > o->a_p)
-			padding(o->width - (o->a_p + 2), ' ');
-	}
+		convert_p(va_arg(args, long long), o);
 	else if (o->type == 'd' || o->type == 'i')
-	{
-		tmpi = va_arg(args, int);
-		i = ft_putnbr_base(tmpi, set_base(o->type), 0);
-		o->a_p = o->dot > i ? o->dot : i;
-		if (tmpi < 0)
-			o->width--;
-		if (o->dot < 0)
-			o->a_p = i;
-		if (o->dot == 0 && tmpi == 0)
-			o->a_p = 0;
-		if (o->flag_minus == 0 && o->width > o->a_p)
-		{
-			if (o->flag_zero == 1 && o->dot < 0)
-			{
-				if (tmpi < 0)
-					ft_putchar('-', 1);
-				padding(o->width - o->a_p, '0');
-			}
-			else
-				padding(o->width - o->a_p, ' ');
-		}
-		if (tmpi < 0 && !(o->flag_zero == 1 && o->dot < 0))
-			ft_putchar('-', 1);
-		o->dot = tmpi < 0 ? o->dot++ : o->dot;
-		o->dot > i ? padding(o->dot - i, '0') : 0;
-		if (!(tmpi == 0 && o->dot == 0))
-			ft_putnbr_base(tmpi, set_base(o->type), 1);
-		if (o->flag_minus > 0 && o->width > o->a_p)
-			padding(o->width - o->a_p, ' ');
-	}
+		convert_di(va_arg(args, int), o);
 	else if (o->type == 'X' || o->type == 'x' || o->type == 'u')
-	{
-		tmpui = va_arg(args, unsigned int);
-		i = ft_putnbr_base(tmpui, set_base(o->type), 0);
-		o->a_p = o->dot > i ? o->dot : i;
-		if (o->dot < 0)
-			o->a_p = i;
-		if (o->dot == 0 && tmpui == 0)
-			o->a_p = 0;
-		if (o->flag_minus == 0 && o->width > o->a_p)
-		{
-			if (o->flag_zero == 1 && o->dot < 0)
-				padding(o->width - o->a_p, '0');
-			else
-				padding(o->width - o->a_p, ' ');
-		}
-		o->dot > i ? padding(o->dot - i, '0') : 0;
-		if (!(tmpui == 0 && o->dot == 0))
-			ft_putnbr_base(tmpui, set_base(o->type), 1);
-		if (o->flag_minus > 0 && o->width > o->a_p)
-			padding(o->width - o->a_p, ' ');
-	}
+		convert_uxx(va_arg(args, unsigned int), o);
 	else
 	{
 		if (o->flag_minus == 0)
