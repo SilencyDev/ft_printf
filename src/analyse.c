@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/17 10:22:05 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/17 11:49:15 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/02/17 12:39:25 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,10 @@ void		analyze_flags(char *s, va_list args, t_option *o)
 		if (*(s - 1) != '.')
 		{
 			if (o->width < 0)
+			{
 				o = ft_init_option(o);
+				o->flag_minus = 1;
+			}
 			o->width = tmp;
 		}
 		if (*(s - 1) == '.')
