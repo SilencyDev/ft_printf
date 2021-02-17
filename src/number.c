@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/17 10:19:47 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/17 11:48:37 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/02/17 16:27:21 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,9 +42,7 @@ int					ft_putptr(unsigned long int nb, char *base, int on)
 	baselen = ft_strlen(base);
 	i = 0;
 	if (nb == baselen)
-	{
 		i += ft_putchar(base[1], on);
-	}
 	if (nb > baselen)
 		ft_putptr((nb / baselen), base, on);
 	i += ft_putchar(base[nb % baselen], on);
@@ -64,9 +62,7 @@ int					ft_putnbr(long long nb, char *base, int on)
 		nb = -nb;
 	}
 	if (nb == baselen)
-	{
 		i += ft_putchar(base[1], on);
-	}
 	if (nb > baselen)
 		ft_putnbr((nb / baselen), base, on);
 	i += ft_putchar(base[nb % baselen], on);

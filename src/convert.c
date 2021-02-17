@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/17 10:06:23 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/17 10:45:05 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/02/17 15:42:41 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,8 @@ void	convert_s(char *s, t_option *o, int i)
 	if (s == NULL)
 		s = "(null)";
 	i = ft_putstr(s, o->dot, 0);
-	o->a_p = o->dot < i ? o->dot : i;
-	if (o->dot < 0)
-		o->a_p = i;
-	if (o->flag_minus == 0 && o->width > o->a_p && o->a_p > -1)
+	o->a_p = (o->dot > i || o->dot < 0) ? i : o->dot;
+	if (o->flag_minus == 0 && o->width > o->a_p)
 	{
 		if (o->flag_zero == 1 && o->dot != 0)
 			padding(o->width - o->a_p, '0');
@@ -35,8 +33,8 @@ void	convert_s(char *s, t_option *o, int i)
 void	convert_di(int nb, t_option *o, int i)
 {
 	i = ft_putnbr_base(nb, set_base(o->type), 0);
-	o->a_p = (o->dot <= i || o->dot < 0) ? i : o->dot;
 	o->width = nb < 0 ? o->width - 1 : o->width;
+	o->a_p = (o->dot <= i || o->dot < 0) ? i : o->dot;
 	if (o->dot == 0 && nb == 0)
 		o->a_p = 0;
 	if (o->flag_minus == 0 && o->width > o->a_p)
@@ -50,7 +48,7 @@ void	convert_di(int nb, t_option *o, int i)
 		else
 			padding(o->width - o->a_p, ' ');
 	}
-	if (nb < 0 && !(o->flag_zero == 1 && o->dot < 0))
+	if (nb < 0 && !(o->width > o->a_p && o->flag_zero == 1 && o->dot < 0 && o->flag_minus == 0))
 		ft_putchar('-', 1);
 	o->dot = nb < 0 ? o->dot++ : o->dot;
 	o->dot > i ? padding(o->dot - i, '0') : 0;

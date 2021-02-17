@@ -6,14 +6,14 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/04 12:52:26 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/17 12:09:10 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/02/17 16:59:36 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
 /*
-**	This globale is used to simplify the workflow and reduce the number
+**	This global is used to simplify the workflow and reduce the number
 **	of step needed to backup the count from putchar
 */
 int	g_count;
