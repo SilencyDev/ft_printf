@@ -1,20 +1,44 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_itoa.c                                          :+:      :+:    :+:   */
+/*   utils.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/01/25 10:37:38 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/01/25 14:04:51 by kmacquet         ###   ########.fr       */
+/*   Created: 2021/02/17 10:11:10 by kmacquet          #+#    #+#             */
+/*   Updated: 2021/02/17 11:47:55 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "ft_printf.h"
 
-int				ft_intlen(long int n)
+int			ft_putstr(char *str, int prec, int on)
 {
-	int			len;
+	int	i;
+
+	i = 0;
+	if (prec > 0)
+		while (*str && str && i < prec)
+			i += ft_putchar(*str++, on);
+	else if (prec < 0)
+		while (*str && str)
+			i += ft_putchar(*str++, on);
+	return (i);
+}
+
+int			ft_strlen(const char *s)
+{
+	int n;
+
+	n = 0;
+	while (s[n])
+		n++;
+	return (n);
+}
+
+int			ft_intlen(long int n)
+{
+	int	len;
 
 	len = 0;
 	if (n == 0)
@@ -32,31 +56,12 @@ int				ft_intlen(long int n)
 	return (len);
 }
 
-long int		ft_noneg(long int n)
+size_t		len_filter(char *toformat)
 {
-	if (n < 0)
-		return (-n);
-	return (n);
-}
+	size_t	j;
 
-char			*ft_itoa(int n)
-{
-	char		*dst;
-	int			len;
-	int			neg;
-
-	len = ft_intlen(n);
-	neg = (n < 0) ? -1 : 1;
-	if (!(dst = (char *)malloc(sizeof(char) * (len + 1))))
-		return (NULL);
-	dst[len--] = '\0';
-	while (len >= 0)
-	{
-		dst[len] = '0' + ft_noneg(n % 10);
-		n = ft_noneg(n / 10);
-		len--;
-	}
-	if (neg == -1)
-		dst[0] = '-';
-	return (dst);
+	j = 0;
+	while (find_converter(toformat[j], "0123456789.-*") && *toformat)
+		j++;
+	return (j);
 }
