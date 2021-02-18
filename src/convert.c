@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/17 10:06:23 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/17 15:42:41 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/02/18 12:36:41 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,8 @@ void	convert_di(int nb, t_option *o, int i)
 		else
 			padding(o->width - o->a_p, ' ');
 	}
-	if (nb < 0 && !(o->width > o->a_p && o->flag_zero == 1 && o->dot < 0 && o->flag_minus == 0))
+	if (nb < 0 && !(o->width > o->a_p && o->flag_zero == 1
+		&& o->dot < 0 && o->flag_minus == 0))
 		ft_putchar('-', 1);
 	o->dot = nb < 0 ? o->dot++ : o->dot;
 	o->dot > i ? padding(o->dot - i, '0') : 0;

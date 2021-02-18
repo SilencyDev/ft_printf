@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/17 10:22:05 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/17 15:43:17 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/02/18 12:39:23 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,6 @@ int			find_converter(char str, char *charset)
 
 void		analyze_flags(char *s, va_list args, t_option *o)
 {
-	int		tmp;
-
 	if (*s == '-')
 	{
 		o = ft_init_option(o);
@@ -41,7 +39,6 @@ void		analyze_flags(char *s, va_list args, t_option *o)
 		o->flag_zero = 1;
 	else if (*s == '*')
 	{
-		tmp = va_arg(args, int);
 		if (*(s - 1) != '.')
 		{
 			if (o->width < 0)
@@ -49,10 +46,10 @@ void		analyze_flags(char *s, va_list args, t_option *o)
 				o = ft_init_option(o);
 				o->flag_minus = 1;
 			}
-			o->width = tmp;
+			o->width = va_arg(args, int);
 		}
 		if (*(s - 1) == '.')
-			o->dot = tmp;
+			o->dot = va_arg(args, int);
 	}
 }
 
