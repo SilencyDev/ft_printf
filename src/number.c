@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/17 10:19:47 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/03/15 11:53:02 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/03/15 13:22:03 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,15 +22,10 @@ int					ft_atoi(const char *str)
 	result = 0;
 	posneg = 1;
 	if (str[i] == '-' || str[i] == '+')
-	{
 		if (str[i++] == '-')
 			posneg = -1;
-	}
 	while (str[i] >= '0' && str[i] <= '9')
-	{
-		result = result * 10 + (str[i] - '0');
-		i++;
-	}
+		result = result * 10 + (str[i++] - '0');
 	return (result * posneg);
 }
 
@@ -88,12 +83,12 @@ int			ft_intlen(long int n)
 		return (1);
 	if (n < 0)
 	{
-		n = n * -1;
+		n *= -1;
 		len++;
 	}
 	while (n > 0)
 	{
-		n = n / 10;
+		n /= 10;
 		len++;
 	}
 	return (len);

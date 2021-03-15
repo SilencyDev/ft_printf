@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/17 10:11:10 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/03/15 11:56:17 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/03/15 13:15:54 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,14 +36,10 @@ size_t		len_filter(char *toformat)
 	return (j);
 }
 
-int			padding(int i, char c)
+void	padding(int i, char c)
 {
-	int	j;
-
-	j = 0;
 	while (i-- > 0)
-		j += ft_putchar(c, 1);
-	return (j);
+		ft_putchar(c, 1);
 }
 
 char		*set_base(char c)
