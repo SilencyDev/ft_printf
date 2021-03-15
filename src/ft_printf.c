@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/04 12:52:26 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/17 16:59:36 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/03/15 11:43:05 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,11 +31,9 @@ int				ft_putchar(char c, int on)
 int				ft_printf(const char *format, ...)
 {
 	char		*toformat;
-	t_option	*o;
+	t_option	o;
 	va_list		args;
 
-	if (!(o = malloc(sizeof(t_option))))
-		return (-1);
 	g_count = 0;
 	toformat = (char *)format;
 	va_start(args, format);
@@ -44,14 +42,13 @@ int				ft_printf(const char *format, ...)
 		if (*toformat == '%')
 		{
 			toformat++;
-			o = analyze_format(toformat, args, ft_init_option(o));
-			convert_type_format(o, args);
+			o = *analyze_format(toformat, args, ft_init_option(&o));
+			convert_type_format(&o, args);
 			toformat = toformat + len_filter(toformat) + 1;
 		}
 		else
 			ft_putchar(*toformat++, 1);
 	}
-	free(o);
 	va_end(args);
 	return (g_count);
 }

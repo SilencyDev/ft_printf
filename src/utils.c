@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/17 10:11:10 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/17 11:47:55 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/03/15 11:56:17 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,36 +26,6 @@ int			ft_putstr(char *str, int prec, int on)
 	return (i);
 }
 
-int			ft_strlen(const char *s)
-{
-	int n;
-
-	n = 0;
-	while (s[n])
-		n++;
-	return (n);
-}
-
-int			ft_intlen(long int n)
-{
-	int	len;
-
-	len = 0;
-	if (n == 0)
-		return (1);
-	if (n < 0)
-	{
-		n = n * -1;
-		len++;
-	}
-	while (n > 0)
-	{
-		n = n / 10;
-		len++;
-	}
-	return (len);
-}
-
 size_t		len_filter(char *toformat)
 {
 	size_t	j;
@@ -64,4 +34,25 @@ size_t		len_filter(char *toformat)
 	while (find_converter(toformat[j], "0123456789.-*") && *toformat)
 		j++;
 	return (j);
+}
+
+int			padding(int i, char c)
+{
+	int	j;
+
+	j = 0;
+	while (i-- > 0)
+		j += ft_putchar(c, 1);
+	return (j);
+}
+
+char		*set_base(char c)
+{
+	if (c == 'p' || c == 'x')
+		return ("0123456789abcdef");
+	else if (c == 'd' || c == 'i' || c == 'u')
+		return ("0123456789");
+	else if (c == 'X')
+		return ("0123456789ABCDEF");
+	return (0);
 }

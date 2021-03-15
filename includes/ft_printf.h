@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/04 13:45:16 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/17 15:43:42 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/03/15 11:46:14 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,9 +36,7 @@ int				ft_strlen(const char *s);
 int				ft_intlen(long int n);
 int				padding(int i, char c);
 int				ft_atoi(const char *str);
-int				ft_putptr(unsigned long int nb, char *base, int on);
-int				ft_putnbr(long long nb, char *base, int on);
-int				ft_putnbr_base(long nbr, char *base, int on);
+int				ft_putnbr_base(long long nbr, char *base, int on);
 int				ft_putptr_base(unsigned long int nbr, char *base, int on);
 int				find_converter(char str, char *charset);
 char			*set_base(char c);

@@ -6,11 +6,22 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/17 10:22:05 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/18 12:39:23 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/03/15 11:56:41 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
+
+t_option	*ft_init_option(t_option *o)
+{
+	o->flag_minus = 0;
+	o->flag_zero = 0;
+	o->width = 0;
+	o->dot = -1;
+	o->a_p = 0;
+	o->type = 0;
+	return (o);
+}
 
 int			find_converter(char str, char *charset)
 {

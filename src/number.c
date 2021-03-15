@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/17 10:19:47 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/02/17 16:27:21 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/03/15 11:53:02 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ int					ft_atoi(const char *str)
 	return (result * posneg);
 }
 
-int					ft_putptr(unsigned long int nb, char *base, int on)
+int					ft_putptr_base(unsigned long int nb, char *base, int on)
 {
 	static int		i;
 	unsigned int	baselen;
@@ -44,12 +44,12 @@ int					ft_putptr(unsigned long int nb, char *base, int on)
 	if (nb == baselen)
 		i += ft_putchar(base[1], on);
 	if (nb > baselen)
-		ft_putptr((nb / baselen), base, on);
+		ft_putptr_base((nb / baselen), base, on);
 	i += ft_putchar(base[nb % baselen], on);
 	return (i);
 }
 
-int					ft_putnbr(long long nb, char *base, int on)
+int					ft_putnbr_base(long long nb, char *base, int on)
 {
 	static int	i;
 	int			baselen;
@@ -64,25 +64,37 @@ int					ft_putnbr(long long nb, char *base, int on)
 	if (nb == baselen)
 		i += ft_putchar(base[1], on);
 	if (nb > baselen)
-		ft_putnbr((nb / baselen), base, on);
+		ft_putnbr_base((nb / baselen), base, on);
 	i += ft_putchar(base[nb % baselen], on);
 	return (i);
 }
 
-int					ft_putnbr_base(long nbr, char *base, int on)
+int			ft_strlen(const char *s)
 {
-	int	i;
+	int n;
 
-	i = 0;
-	i = ft_putnbr(nbr, base, on);
-	return (i);
+	n = 0;
+	while (s[n])
+		n++;
+	return (n);
 }
 
-int					ft_putptr_base(unsigned long int nbr, char *base, int on)
+int			ft_intlen(long int n)
 {
-	int	i;
+	int	len;
 
-	i = 0;
-	i = ft_putptr(nbr, base, on);
-	return (i);
+	len = 0;
+	if (n == 0)
+		return (1);
+	if (n < 0)
+	{
+		n = n * -1;
+		len++;
+	}
+	while (n > 0)
+	{
+		n = n / 10;
+		len++;
+	}
+	return (len);
 }
