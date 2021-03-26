@@ -6,7 +6,7 @@
 /*   By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/04 12:52:26 by kmacquet          #+#    #+#             */
-/*   Updated: 2021/03/15 11:43:05 by kmacquet         ###   ########.fr       */
+/*   Updated: 2021/03/26 17:36:12 by kmacquet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,37 @@ int				ft_putchar(char c, int on)
 	return (1);
 }
 
+int			ft_putstr(char *str, int prec, int on)
+{
+	int	i;
+
+	i = 0;
+	if (prec > 0)
+		while (*str && str && i < prec)
+			i += ft_putchar(*str++, on);
+	else if (prec < 0)
+		while (*str && str)
+			i += ft_putchar(*str++, on);
+	return (i);
+}
+
+void	padding(int i, char c)
+{
+	while (i-- > 0)
+		ft_putchar(c, 1);
+}
+
+char		*set_base(char c)
+{
+	if (c == 'p' || c == 'x')
+		return ("0123456789abcdef");
+	else if (c == 'd' || c == 'i' || c == 'u')
+		return ("0123456789");
+	else if (c == 'X')
+		return ("0123456789ABCDEF");
+	return (0);
+}
+
 int				ft_printf(const char *format, ...)
 {
 	char		*toformat;
@@ -42,9 +73,8 @@ int				ft_printf(const char *format, ...)
 		if (*toformat == '%')
 		{
 			toformat++;
-			o = *analyze_format(toformat, args, ft_init_option(&o));
+			toformat = analyze_format(toformat, args, ft_init_option(&o));
 			convert_type_format(&o, args);
-			toformat = toformat + len_filter(toformat) + 1;
 		}
 		else
 			ft_putchar(*toformat++, 1);

@@ -6,15 +6,15 @@
 #    By: kmacquet <kmacquet@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/02/02 13:02:47 by kmacquet          #+#    #+#              #
-#    Updated: 2021/03/15 11:53:46 by kmacquet         ###   ########.fr        #
+#    Updated: 2021/03/26 15:55:13 by kmacquet         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = libftprintf.a
 CC = gcc
 FLAGS = -Wall -Wextra -Werror -I./includes
-SRCS = src/ft_printf.c src/analyse.c src/convert.c \
-		src/number.c src/utils.c
+SRCS = src/ft_printf.c src/analyse.c \
+		src/convert.c src/number.c
 OBJS = $(SRCS:.c=.o)
 ARRCS = ar -rcs
 RM = rm -f
